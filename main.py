@@ -76,11 +76,34 @@ def end_program():
 # region Main
 
 
+
 def main():
+
+    def getColorInfo(port: int) -> list:
+        """
+        Get the current color sensor and return a list of ints of R, G, and B as well as ambient light and reflected light in a single list.
+        """
+        sensor = ColorSensor(port)
+        return list(list(sensor.get_rgb_intensity()), sensor.get_ambient_light(), sensor.get_reflected_light())
+    
+    def inColor(r, g, b, range, port: int) -> bool:
+        """
+        Returns a boolean given the r, g, and b values on if the color sensor is reading the given values.
+        The Range variable is used to give a bit of wiggle room in these values.
+        """
+        return True
+    
+    def 
+
     # ----------------  Put your code logic here  -----------------
-    matrix.show_image("CLOCK8")
-    wheels.move(5)
-    print('distance=%d' % distance_sensor.get_distance_cm())
+    try:
+        matrix.show_image("YES")
+        wheels.move(5)
+        print('distance=%d' % distance_sensor.get_distance_cm())
+    except Exception:
+        matrix.show_image("SAD")
+        print("Error occured!!!!!!!!")
+    
     
 
 # endregion
