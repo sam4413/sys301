@@ -93,7 +93,11 @@ def main():
         """
         return True
     
-    def 
+    def isMine(port: int) -> bool:
+        """
+        Returns true if the color that was detected is a Mine sticky note, meaning a mine color. Emits true if so.
+        """
+        return True
 
     # ----------------  Put your code logic here  -----------------
     try:
