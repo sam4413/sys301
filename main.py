@@ -2,14 +2,18 @@ from hub import light_matrix, port, sound
 import runloop
 import motor
 import color_sensor
-import motor_pair
 
 COLOR_RANGE = 5
 
-LEFT_MOTOR = port.A
-RIGHT_MOTOR = port.B
+DRIVE_MOTOR = port.A
+STEERING_MOTOR = port.B
+
 COLOR_SENSOR = port.C
 COLOR_SENSOR_2 = port.D
+
+STEERING_CENTER = 0
+STEERING_LEFT = -90
+STEERING_RIGHT = 90
 
 
 def inColor(r, g, b, color_range, sensor_port) -> bool:
@@ -32,48 +36,68 @@ def inColor(r, g, b, color_range, sensor_port) -> bool:
         abs(detected_b - b) <= color_range
     )
 
+
+async def lockSteeringCenter():
+    """
+    Locks Motor B to the default center rotation.
+    """
+    await motor.run_to_absolute_position(STEERING_MOTOR, STEERING_CENTER, 300)
+
+
 async def turnRight(time_ms, speed):
     """
-    Turns right using the motor pair.
+    Turns right using the steering motor.
     """
-    motor_pair.pair(motor_pair.PAIR_1, LEFT_MOTOR, RIGHT_MOTOR)
-    motor_pair.move(motor_pair.PAIR_1, 100, velocity=speed)
+    await motor.run_to_absolute_position(STEERING_MOTOR, STEERING_RIGHT, 300)
+
+    motor.run(DRIVE_MOTOR, speed)
     await runloop.sleep_ms(time_ms)
-    motor_pair.stop(motor_pair.PAIR_1)
+    motor.stop(DRIVE_MOTOR)
+
+    await lockSteeringCenter()
 
 
 async def turnLeft(time_ms, speed):
     """
-    Turns left using the motor pair.
+    Turns left using the steering motor.
     """
-    motor_pair.pair(motor_pair.PAIR_1, LEFT_MOTOR, RIGHT_MOTOR)
-    motor_pair.move(motor_pair.PAIR_1, -100, velocity=speed)
+    await motor.run_to_absolute_position(STEERING_MOTOR, STEERING_LEFT, 300)
+
+    motor.run(DRIVE_MOTOR, speed)
     await runloop.sleep_ms(time_ms)
-    motor_pair.stop(motor_pair.PAIR_1)
+    motor.stop(DRIVE_MOTOR)
+
+    await lockSteeringCenter()
 
 
 async def moveForward(time_ms, speed):
     """
-    Moves forward using the motor pair.
+    Moves forward using Motor A.
     """
-    motor_pair.pair(motor_pair.PAIR_1, LEFT_MOTOR, RIGHT_MOTOR)
-    motor_pair.move(motor_pair.PAIR_1, 0, velocity=speed)
+    await lockSteeringCenter()
+
+    motor.run(DRIVE_MOTOR, speed)
     await runloop.sleep_ms(time_ms)
-    motor_pair.stop(motor_pair.PAIR_1)
+    motor.stop(DRIVE_MOTOR)
 
 
 async def moveBackward(time_ms, speed):
     """
-    Moves backward using the motor pair.
+    Moves backward using Motor A.
     """
-    motor_pair.pair(motor_pair.PAIR_1, LEFT_MOTOR, RIGHT_MOTOR)
-    motor_pair.move(motor_pair.PAIR_1, 0, velocity=-speed)
+    await lockSteeringCenter()
+
+    motor.run(DRIVE_MOTOR, -speed)
     await runloop.sleep_ms(time_ms)
-    motor_pair.stop(motor_pair.PAIR_1)
+    motor.stop(DRIVE_MOTOR)
+
 
 async def main():
     print("Running program")
     await light_matrix.write("Hi!")
+
+    # Lock the steering motor to the default center position before starting.
+    await lockSteeringCenter()
 
     while True:
         #print(color_sensor.rgbi(COLOR_SENSOR))
@@ -107,7 +131,7 @@ async def main():
 
         else:
             print("No colors detected! Moving slowly forward!")
-            await moveForward(100, 200)
+            await moveForward(200, 200)
 
         await runloop.sleep_ms(100)
 
